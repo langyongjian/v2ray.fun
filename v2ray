@@ -1,7 +1,7 @@
 #!/bin/bash
 export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-#Check Root
+# Check Root
 [ $(id -u) != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
 
 echo ""
@@ -12,11 +12,12 @@ echo "1.服务管理"
 echo "2.更改配置"
 echo "3.查看服务端信息"
 echo "4.下载客户端配置文件"
+echo "5.更新v2ray和v2ray.fun"
 echo "请输入数字选择功能(按回车键退出)："
 
 while :; do echo
 	read -n1 -p "请选择： " choice
-	if [[ ! $choice =~ ^[1-4]$ ]]; then
+	if [[ ! $choice =~ ^[1-5]$ ]]; then
         if [[ -z ${choice} ]];then
             exit 0
         fi
@@ -27,6 +28,9 @@ while :; do echo
 	fi
 done
 
+if [[ ${choice} == 5 ]]; then
+    bash -c "$(curl -fsSL https://git.io/vpOex)"
+fi
 if [[ ${choice} == 1 ]]; then
     echo "1.启动服务"
     echo "2.停止服务"
@@ -85,11 +89,13 @@ if [[ ${choice} == 2 ]]; then
     echo "4.更改传输方式"
     echo "5.更改TLS设置"
     echo "6.更改广告拦截功能"
+    echo "7.更改alterId"
+    echo "8.更改动态端口"
     echo "请输入数字选择功能："
 
     while :; do echo
 	    read -n1 -p "请选择： " changechoice
-	    if [[ ! $changechoice =~ ^[1-6]$ ]]; then
+	    if [[ ! $changechoice =~ ^[1-8]$ ]]; then
             if [[ -z ${changechoice} ]];then
                 bash /usr/local/bin/v2ray
                 exit 0
@@ -100,6 +106,21 @@ if [[ ${choice} == 2 ]]; then
 		    break
 	    fi
     done
+    if [[ ${changechoice} == 8 ]]; then
+        python /usr/local/v2ray.fun/en_dyn_port.py
+	    service v2ray restart
+        echo ""
+        echo "更改动态端口成功！"
+        bash /usr/local/bin/v2ray
+    fi
+    if [[ ${changechoice} == 7 ]]; then
+        python /usr/local/v2ray.fun/change_alter_ID.py
+        python /usr/local/v2ray.fun/genclient.py
+	    service v2ray restart
+        echo ""
+        echo "alterId修改成功！"
+        bash /usr/local/bin/v2ray
+    fi
     
     if [[ ${changechoice} == 1 ]]; then
         python /usr/local/v2ray.fun/changeuuid.py
@@ -163,10 +184,24 @@ fi
 
 if [[ ${choice} == 4 ]]; then
     python /usr/local/v2ray.fun/genclient.py && echo "保存成功！(/root/config.json)"
-    read -n1 -p  "是否通过sz来传输配置文件(y/n)" ans
+    read -n1 -p  "是否通过sz来传输json配置文件(y/n)" ans
     if [[ ${ans} =~ [yY] ]]; then
         which sz 2>/dev/null && sz /root/config.json
     fi
     echo -e "\n"
+    if [[ -f  "/root/config_v2rayN.png"  ]]; then
+        read -n1 -p  "是否通过sz来传输qrcode图片(v2rayN)(y/n)" ans
+        if [[ ${ans} =~ [yY] ]]; then
+            which sz 2>/dev/null && sz /root/config_v2rayN.png
+        fi
+        echo -e "\n"
+    fi
+    if [[ -f  "/root/config_pepi.png"  ]]; then
+        read -n1 -p  "是否通过sz来传输qrcode图片(pepi)(y/n)" ans
+        if [[ ${ans} =~ [yY] ]]; then
+            which sz 2>/dev/null && sz /root/config_pepi.png
+        fi
+        echo -e "\n"
+    fi
     bash /usr/local/bin/v2ray
 fi
